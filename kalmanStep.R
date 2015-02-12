@@ -47,7 +47,7 @@ kalmanStep<-function(p,Y,H,drivers){
       #New observation
       y=matrix(as.numeric(Y[t,]),nrow=nVar,byrow=TRUE)
              
-      #Predictions
+      #Predictions (a is estimate of state, P is covariance matrix of estimation error)
       a = (B %*% a) + (C%*%ut)
       P = (B %*% P %*% t(B))+Q
       
@@ -59,17 +59,17 @@ kalmanStep<-function(p,Y,H,drivers){
         avail <- which(is.na(y)==FALSE)
         nT <- length(avail)
         W <- matrix(0,nrow=nT,ncol=nVar,byrow=TRUE) 
-        W[cbind((1:length(avail)),avail)] <- 1  ###>>>>double-check that this works as intended
+        W[cbind((1:length(avail)),avail)] <- 1
         y[which(is.na(y))] <- 0 #To make matrix math in next line work
         yT <- W %*% y
         
         #Update
         V = yT-a[avail]  # residuals
-        F = P+H #P[avail,avail]+H[avail,avail]  ###>>>>>>>>>Need to deal with dimensions here
-        Finv_P = solve(F,P)
-        Finv_V = solve(F,V)
-        a = a + (P %*% Finv_V)
-        P = P - (P %*% Finv_P)
+        F = P+H
+        Finv_P = solve(F[avail,avail],P[avail,avail])
+        Finv_V = solve(F[avail,avail],V)
+        a[avail,] = a[avail,] + (P[avail,avail] %*% Finv_V)
+        P[avail,avail] = P[avail,avail] - (P[avail,avail] %*% Finv_P)
         
         #Accumulate likelihood terms
         logdetF = c( logdetF, 0.5*log(det(F)) )
