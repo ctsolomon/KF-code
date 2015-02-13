@@ -15,6 +15,10 @@ source('kalmanState.R')
 #Load test data
 load('C:/Users/csolom7/Documents/Research projects/C model/Data/Test/testData')
 
+#Keep only every 5th observation
+keepRows <- seq(1,dim(lakeCObs)[1],5)
+lakeCObs[-keepRows,2:3] <- NA
+
 #Initial guess of parameters
 log(truePars["sProcDIC"]^2)
 log(truePars["sProcDOC"]^2)
@@ -44,7 +48,21 @@ print(signif(parsMatrix,3))
 #Run KF with ML parameter estimates to pull out estimates of state
 stateEst <- kalmanState(p=fit$par,Y=lakeCObs[,2:3],H=H,drivers=data1)
 
-#Plot these state estimates along with the simulated (and maybe observed?) data
+#Plot observed data, estimated states, and rough 95% CI for predicted state (+- 2 sd)
+par(mfrow=c(2,1),mar=c(3.1,3.1,1.1,1.1))
+plot(DIC~time,data=lakeCObs,xlab="DOY",ylab="Lake C (mol)")
+points(stateEst$a[1,]~lakeCObs$time,type='l')
+sd <- sqrt(stateEst$P[1,1,])
+points(lakeCObs$time,(stateEst$a[1,]+2*sd),type='l',col='gray')
+points(lakeCObs$time,(stateEst$a[1,]-2*sd),type='l',col='gray')
+plot(DOC~time,data=lakeCObs,xlab="DOY",ylab="Lake C (mol)")
+points(stateEst$a[2,]~lakeCObs$time,type='l')
+sd <- sqrt(stateEst$P[2,2,])
+points(lakeCObs$time,(stateEst$a[2,]+2*sd),type='l',col='gray')
+points(lakeCObs$time,(stateEst$a[2,]-2*sd),type='l',col='gray')
+
+
+#Plot state estimates along with the simulated data
 plot(DIC~time,data=lakeCSim,type='l',xlab="DOY",ylab="Lake C (mol)")
 points(stateEst[1,]~lakeCSim$time,type='l',col='blue')
 par(new=T)
