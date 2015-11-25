@@ -79,7 +79,7 @@ kalmanStep<-function(p,Y,H,drivers){
     } # End iteration
     
     # Calculate negative log likelihood
-    NLL = (0.5*nObs*log(2*pi)) + sum(logdetF,na.rm=TRUE) + sum(VFV,na.rm=TRUE)
+    NLL <- 0.5*(nVar*nObs*log(2*pi)+sum(logdetF,na.rm=TRUE)+sum(VFV,na.rm=TRUE))
     
     return(NLL)
   }) #end 'with'
